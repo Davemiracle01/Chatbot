@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Gojo Chat</title>
+<link rel="icon" type="image/jpeg" href="/assets/menu.jpg" />
+<style>
+  :root {
+    --bg: #0b0b12;
+    --panel: #151521;
+    --accent: #5b8cff;
+    --accent2: #a855f7;
+    --text: #eaeaf5;
+    --muted: #8d8da8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: radial-gradient(circle at top, #1a1a2e, var(--bg));
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  header {
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #222233;
+  }
+  .header-text { flex: 1; text-align: left; }
+  header h1 {
+    margin: 0;
+    font-size: 1.2rem;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header p { margin: 2px 0 0; color: var(--muted); font-size: 0.78rem; }
+  #banner {
+    width: 54px;
+    height: 54px;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    flex-shrink: 0;
+  }
+  #clearBtn {
+    background: none;
+    border: 1px solid #2a2a40;
+    color: var(--muted);
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  #clearBtn:hover { border-color: var(--accent); color: var(--text); }
+
+  #chat {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    max-width: 85%;
+  }
+  .row.user { align-self: flex-end; flex-direction: row-reverse; }
+  .row.bot { align-self: flex-start; }
+
+  .avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--accent);
+    flex-shrink: 0;
+  }
+
+  .msg {
+    padding: 10px 14px;
+    border-radius: 14px;
+    line-height: 1.4;
+    font-size: 0.95rem;
+    white-space: pre-wrap;
+  }
+  .user .msg {
+    background: var(--accent);
+    color: white;
+    border-bottom-right-radius: 4px;
+  }
+  .bot .msg {
+    background: var(--panel);
+    border: 1px solid #262640;
+    border-bottom-left-radius: 4px;
+  }
+
+  .typing-dots { display: inline-flex; gap: 3px; align-items: center; }
+  .typing-dots span {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: bounce 1.2s infinite ease-in-out;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: 0.15s; }
+  .typing-dots span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes bounce {
+    0%, 60%, 100% { transform: translateY(0); opacity: 0.5; }
+    30% { transform: translateY(-5px); opacity: 1; }
+  }
+
+  form {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-top: 1px solid #222233;
+    background: var(--bg);
+  }
+  input {
+    flex: 1;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid #2a2a40;
+    background: var(--panel);
+    color: var(--text);
+    font-size: 0.95rem;
+    outline: none;
+  }
+  input:focus { border-color: var(--accent); }
+  button[type="submit"] {
+    padding: 0 18px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<header>
+  <img id="banner" src="/assets/banner.jpg" alt="Gojo Satoru" />
+  <div class="header-text">
+    <h1>🔵 Gojo Chat</h1>
+    <p>Strongest sorcerer. Shortest patience.</p>
+  </div>
+  <button id="clearBtn" type="button">Clear</button>
+</header>
+
+<div id="chat"></div>
+
+<form id="form">
+  <input id="input" type="text" placeholder="Say something to Gojo..." autocomplete="off" maxlength="500" />
+  <button id="send" type="submit">Send</button>
+</form>
+
+<script>
+const chatEl = document.getElementById("chat");
+const form = document.getElementById("form");
+const input = document.getElementById("input");
+const sendBtn = document.getElementById("send");
+const clearBtn = document.getElementById("clearBtn");
+
+const STORAGE_KEY = "gojo_history";
+const GREETING = "Yo. Say 'gojo' or anything — I'm always listening. Try not to bore me.";
+
+function loadHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function saveHistory(history) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(history.slice(-20)));
+}
+
+function addBubble(content, who) {
+  // who: "user" or "bot". content: string, or {typing:true} for the indicator.
+  const isBot = who === "bot";
+  const row = document.createElement("div");
+  row.className = "row " + who;
+
+  if (isBot) {
+    const avatar = document.createElement("img");
+    avatar.className = "avatar";
+    avatar.src = "/assets/banner.jpg";
+    avatar.alt = "Gojo";
+    row.appendChild(avatar);
+  }
+
+  const bubble = document.createElement("div");
+  bubble.className = "msg";
+
+  if (content && content.typing) {
+    bubble.innerHTML = '<span class="typing-dots"><span></span><span></span><span></span></span>';
+  } else {
+    bubble.textContent = content;
+  }
+  row.appendChild(bubble);
+
+  chatEl.appendChild(row);
+  chatEl.scrollTop = chatEl.scrollHeight;
+  return row;
+}
+
+function renderHistory(history) {
+  chatEl.innerHTML = "";
+  if (history.length === 0) {
+    addBubble(GREETING, "bot");
+    return;
+  }
+  history.forEach(m => addBubble(m.content, m.role === "user" ? "user" : "bot"));
+}
+
+let history = loadHistory();
+renderHistory(history);
+
+clearBtn.addEventListener("click", () => {
+  if (!confirm("Wipe this conversation?")) return;
+  history = [];
+  saveHistory(history);
+  renderHistory(history);
+});
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+
+  addBubble(text, "user");
+  history.push({ role: "user", content: text });
+  saveHistory(history);
+  input.value = "";
+  input.disabled = true;
+  sendBtn.disabled = true;
+
+  const typingRow = addBubble({ typing: true }, "bot");
+
+  try {
+    const res = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message: text, history: history.slice(0, -1) }),
+    });
+    const data = await res.json();
+    typingRow.remove();
+
+    // Server sends a styled "reply" even on 400/429 so errors stay in character.
+    const reply = data.reply || data.error || "Heh, Infinity says no.";
+    addBubble(reply, "bot");
+    history.push({ role: "assistant", content: reply });
+    saveHistory(history);
+  } catch (err) {
+    typingRow.remove();
+    addBubble("Connection's blocked by my Infinity. Try again.", "bot");
+  } finally {
+    input.disabled = false;
+    sendBtn.disabled = false;
+    input.focus();
+  }
+});
+</script>
+
+</body>
+</html>
