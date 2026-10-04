@@ -80,7 +80,7 @@ export default async function handler(req, res) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "llama3-8b-8192",
+        model: "openai/gpt-oss-20b",
         messages,
       }),
     });
@@ -105,4 +105,4 @@ export default async function handler(req, res) {
     console.error("Handler error:", err);
     return res.status(500).json({ error: "Internal error" });
   }
-          }
+}
