@@ -11,12 +11,10 @@ const rateLimitMap = new Map();
 function isRateLimited(ip) {
   const now = Date.now();
   const entry = rateLimitMap.get(ip);
-
   if (!entry || now - entry.windowStart > RATE_LIMIT_WINDOW_MS) {
     rateLimitMap.set(ip, { windowStart: now, count: 1 });
     return false;
   }
-
   entry.count += 1;
   return entry.count > RATE_LIMIT_MAX;
 }
@@ -32,9 +30,7 @@ export default async function handler(req, res) {
     "unknown";
 
   if (isRateLimited(ip)) {
-    return res.status(429).json({
-      reply: "Slow down. Even I need a second to process that much yapping.",
-    });
+    return res.status(429).json({ reply: "Naomba subiri kidogo kisha jaribu tena." });
   }
 
   const { message, history } = req.body || {};
@@ -44,9 +40,7 @@ export default async function handler(req, res) {
   }
 
   if (message.length > MAX_MESSAGE_LEN) {
-    return res.status(400).json({
-      reply: `Keep it under ${MAX_MESSAGE_LEN} characters. I'm strong, not patient.`,
-    });
+    return res.status(400).json({ reply: `Fupisha ujumbe chini ya herufi ${MAX_MESSAGE_LEN}.` });
   }
 
   const apiKey = process.env.GROQ_API_KEY;
@@ -54,7 +48,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Server misconfigured: no GROQ_API_KEY" });
   }
 
-  const persona = `You are Gojo Satoru from Jujutsu Kaisen. You are witty, cocky, sharp, and helpful. Keep answers under 40 words. If someone comes for a word fight, destroy them with confident stylish comebacks. NEVER break character.`;
+  // Generic assistant persona for Subra's portfolio — not a character.
+  const persona = `You are the helpful AI assistant on Subra's website. Subra is a designer and artist based in Tanzania, working in digital art, branding, and UI concepts. Answer questions about Subra's work and how to get in touch, and general questions too. Be friendly, concise, and helpful. Keep replies under 40 words. Respond in the same language the visitor writes in (Swahili or English).`;
 
   const cleanHistory = Array.isArray(history)
     ? history
@@ -86,9 +81,7 @@ export default async function handler(req, res) {
     });
 
     if (groqRes.status === 429) {
-      return res.status(429).json({
-        reply: "Easy. My Infinity blocks requests too fast — try again in a bit.",
-      });
+      return res.status(429).json({ reply: "Maombi mengi kwa sasa — jaribu tena baadaye kidogo." });
     }
 
     if (!groqRes.ok) {
@@ -98,7 +91,7 @@ export default async function handler(req, res) {
     }
 
     const data = await groqRes.json();
-    const reply = data.choices?.[0]?.message?.content || "Heh, Infinity says no.";
+    const reply = data.choices?.[0]?.message?.content || "Samahani, sijapata jibu kwa sasa.";
 
     return res.status(200).json({ reply });
   } catch (err) {
