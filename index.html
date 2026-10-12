@@ -143,15 +143,15 @@
   </nav>
 
   <section class="hero" id="hero">
-    <div class="loc">Dar es Salaam, Tanzania</div>
+    <div class="loc">Tanzania</div>
     <h1>Subra</h1>
-    <p>Usanifu na sanaa ya kidijitali — rangi zinazong'aa, mwendo, na muonekano wa kioo. Kazi isiyotulia.</p>
+    <p>karibu subratech.</p>
     <a class="cta" href="#work">Ona kazi ↓</a>
   </section>
 
   <section class="about" id="about">
     <h2>Kuhusu</h2>
-    <p>Subra ni msanifu na msanii anayeishi Dar es Salaam, akifanya kazi za sanaa ya kidijitali, uundaji wa chapa, na muonekano wa kuona. Anavutiwa na rangi zinazong'aa na nyuso zenye uhai.</p>
+    <p>🇹🇿</p>
     <div class="tags">
       <span class="tag">Sanaa ya Kidijitali</span>
       <span class="tag">Uundaji wa Chapa</span>
@@ -173,7 +173,7 @@
     <a class="cta" href="mailto:hello@subra.art">Wasiliana nami</a>
   </section>
 
-  <footer>© Subra — Dar es Salaam</footer>
+  <footer>© Subra</footer>
 
   <div class="lightbox" id="lightbox">
     <button class="lb-close" id="lbClose">✕</button>
@@ -188,7 +188,7 @@
   </button>
   <div id="chatPanel">
     <div class="chat-head">
-      <span>Muulize AI</span>
+      <span>chat AI</span>
       <button id="chatClose">✕</button>
     </div>
     <div id="chatMessages"></div>
@@ -239,7 +239,7 @@
     urls.forEach((url,i)=>{
       const card = document.createElement('div');
       card.className = 'card';
-      card.innerHTML = `<img src="${url}" loading="lazy"><h3>${titles[i+1] || 'Kipande ' + (i+1)}</h3>`;
+      card.innerHTML = `<img src="${url}" loading="lazy"><h3>${titles[i+1] || ' carousel test ' + (i+1)}</h3>`;
       card.addEventListener('click', ()=> openLightbox(i));
       track.appendChild(card);
     });
