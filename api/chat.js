@@ -45,7 +45,7 @@ const fullRecipe = (r) =>
 const catalog = RECIPES.map((r) => `- ${short(r)} (${LEVEL[r.level]}, ${r.type}, ${r.time})`).join("\n");
 
 function buildPersona(matched, context) {
-  let p = `You are the kitchen assistant on Jikoni Rahisi, a Kenyan home-cooking website. You help with Kenyan recipes, from 5-minute snacks and drinks to Sunday pilau and nyama choma. You know every recipe on the site (listed below) and can also answer general cooking questions, substitutions, timing and serving ideas.
+  let p = `You are the kitchen assistant on Quick & Easy Recipes, a Kenyan home-cooking website. You help with Kenyan recipes, from 5-minute snacks and drinks to Sunday pilau and nyama choma. You know every recipe on the site (listed below) and can also answer general cooking questions, substitutions, timing and serving ideas.
 
 Style: warm, practical and short. Reply in the same language the visitor writes in (English, Swahili or Sheng). Never invent steps that contradict the site's recipes.
 
@@ -148,3 +148,4 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: "Internal error" });
   }
 }
+
