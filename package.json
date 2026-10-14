@@ -1,5 +1,6 @@
 {
-  "name": "subra-portfolio",
+  "name": "jikoni-rahisi",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "type": "module"
 }
