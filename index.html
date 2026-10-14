@@ -60,6 +60,16 @@ h2{font:400 clamp(2.8rem,14vw,5rem)/.9 var(--d);text-transform:uppercase;margin:
 .ask h2{font-size:clamp(2.2rem,11vw,3.6rem)}
 .ask p{margin:0 0 20px;max-width:40ch}
 .ask .btn{background:var(--yel);color:var(--black)}
+a.btn{text-decoration:none}
+.ask .btn.alt{background:transparent;color:var(--white);border:2px solid var(--white)}
+.community{margin-top:26px;padding-top:20px;border-top:2px dashed rgba(255,253,249,.3)}
+.community p{margin:0 0 14px;font-size:.95rem;opacity:.85}
+.community .row{display:flex;flex-wrap:wrap;gap:10px}
+.made{margin-top:18px;padding-top:14px;border-top:2px dashed #cfc7bd;font-size:.92rem;color:var(--grey)}
+.made b{color:var(--black)}
+.made .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.made a{display:inline-block;padding:8px 14px;border:2px solid var(--black);border-radius:999px;color:var(--black);font-weight:700;font-size:.85rem;text-decoration:none}
+footer a{color:var(--grey);font-weight:700}
 footer{max-width:900px;margin:0 auto;padding:0 20px 100px;color:var(--grey);font-size:.85rem}
 
 /* recipe sheet + chat card */
@@ -129,10 +139,17 @@ footer{max-width:900px;margin:0 auto;padding:0 20px 100px;color:var(--grey);font
     <h2>Stuck?</h2>
     <p>Ask the kitchen. Try "how do I make ugali mayai" and you get the photo and the full steps.</p>
     <button class="btn" id="askBtn">Ask the kitchen</button>
+    <div class="community">
+      <p>Cook along, share your photos and swap tips with other home cooks.</p>
+      <div class="row">
+        <a class="btn" data-link="group" target="_blank" rel="noopener">Join the WhatsApp group</a>
+        <a class="btn alt" data-link="channel" target="_blank" rel="noopener">Follow the channel</a>
+      </div>
+    </div>
   </div>
 </main>
 
-<footer>© Jikoni Rahisi</footer>
+<footer>© Jikoni Rahisi · <a data-link="group" target="_blank" rel="noopener">WhatsApp group</a> · <a data-link="channel" target="_blank" rel="noopener">Channel</a></footer>
 
 <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Recipe">
   <div class="panel" id="panel"></div>
@@ -149,7 +166,11 @@ footer{max-width:900px;margin:0 auto;padding:0 20px 100px;color:var(--grey);font
 </div>
 
 <script>
+// Change these two lines if an invite link ever changes.
+const GROUP_LINK='https://chat.whatsapp.com/GVSqY8eXW9sB3gsUHKMsWI?s=cl&p=a&mlu=4&iam=2';
+const CHANNEL_LINK='https://whatsapp.com/channel/0029VavpWUvGk1Fkbzz0vz0v';
 const $=id=>document.getElementById(id);
+document.querySelectorAll('[data-link]').forEach(a=>a.href=a.dataset.link==='group'?GROUP_LINK:CHANNEL_LINK);
 const LV={1:'Easy',2:'Medium',3:'Hard'};
 let R=[], byId={};
 
@@ -197,6 +218,10 @@ function openSheet(id){
   const b=document.createElement('button');b.className='btn';b.textContent='Ask the kitchen about this';
   b.onclick=()=>{closeSheet();setOpen(true);note(`Ask me anything about ${r.name}.`)};
   $('panel').querySelector('.body').appendChild(b);
+  const shareUrl='https://wa.me/?text='+encodeURIComponent(`${r.name} recipe: ${location.origin}`);
+  const m=document.createElement('div');m.className='made';
+  m.innerHTML=`<b>Made this?</b> Post a photo in the group and show us how it turned out.<div class="row"><a href="${GROUP_LINK}" target="_blank" rel="noopener">Open the group</a><a href="${shareUrl}" target="_blank" rel="noopener">Share this recipe</a></div>`;
+  $('panel').querySelector('.body').appendChild(m);
   $('sx').onclick=closeSheet;
   $('sheet').classList.add('open');$('sx').focus();
 }
@@ -245,5 +270,4 @@ async function send(text){
 $('cf').onsubmit=e=>{e.preventDefault();const t=ci.value.trim();if(!t)return;ci.value='';send(t)};
 </script>
 </body>
-  </html>
-  
+</html>
