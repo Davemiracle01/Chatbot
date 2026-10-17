@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#e5352b">
 <title>Quick &amp; Easy Recipes</title>
-<meta name="description" content="Quick and easy Kenyan recipes, from 5-minute snacks to Sunday pilau, with a kitchen assistant you can ask.">
+<meta name="description" content="Quick and easy African recipes from Kenya, Nigeria, Ghana, South Africa, Ethiopia and more, from 5-minute snacks to Sunday pilau, with a kitchen assistant you can ask.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Karla:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
@@ -53,6 +53,8 @@ h2{font:400 clamp(2.8rem,14vw,5rem)/.9 var(--d);text-transform:uppercase;margin:
 .chip[aria-pressed="true"]{background:var(--black);color:var(--white)}
 
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cty{grid-column:1/-1;font:400 1.8rem/1 var(--d);text-transform:uppercase;margin:18px 0 2px;padding-bottom:6px;border-bottom:3px solid var(--black)}
+.cty:first-child{margin-top:0}
 .rc{border:3px solid var(--black);background:var(--white);padding:0;text-align:left;cursor:pointer;display:flex;flex-direction:column;color:inherit}
 .rc:active{transform:scale(.98)}
 .ph{position:relative;aspect-ratio:4/3;background:var(--yel);overflow:hidden}
@@ -124,9 +126,9 @@ footer{max-width:900px;margin:0 auto;padding:0 20px 100px;color:var(--grey);font
 <body>
 
 <header class="hero">
-  <div class="top"><span>Kenyan recipes</span><span>Snacks to pilau</span></div>
+  <div class="top"><span>African recipes</span><span>Snacks to pilau</span></div>
   <h1><span class="s">Quick &amp; Easy</span><span class="a">Recipes</span></h1>
-  <p>Kenyan food from 5-minute snacks to Sunday pilau. Ask the kitchen anything.</p>
+  <p>Food from across Africa, from 5-minute snacks to Sunday jollof and pilau. Ask the kitchen anything.</p>
   <a class="btn" href="#recipes">Browse recipes</a>
   <div class="ticker" aria-hidden="true"><div id="tk"></div></div>
 </header>
@@ -151,6 +153,12 @@ footer{max-width:900px;margin:0 auto;padding:0 20px 100px;color:var(--grey);font
     <button class="chip" data-f="2" aria-pressed="false">Medium</button>
     <button class="chip" data-f="3" aria-pressed="false">Hard</button>
     <button class="chip" data-f="quick" aria-pressed="false">Snacks &amp; drinks</button>
+    <button class="chip" data-f="cat:rice" aria-pressed="false">Rice</button>
+    <button class="chip" data-f="cat:soup" aria-pressed="false">Soups</button>
+    <button class="chip" data-f="cat:sauce" aria-pressed="false">Sauces</button>
+    <button class="chip" data-f="cat:topping" aria-pressed="false">Toppings</button>
+    <button class="chip" data-f="cat:swallow" aria-pressed="false">Swallow</button>
+    <button class="chip" data-f="cat:other" aria-pressed="false">Barbecue &amp; more</button>
   </div>
   <div class="grid" id="grid"><p class="err">Loading recipes…</p></div>
 
@@ -194,7 +202,7 @@ const LV={1:'Easy',2:'Medium',3:'Hard'};
 let R=[], byId={};
 
 /* ticker */
-const tw=['Ugali mayai','Indomie','Mandazi','Pilau','Ice pops','Chapati','Githeri','Nyama choma'];
+const tw=['Ugali mayai','Jollof rice','Mandazi','Waakye','Suya','Bobotie','Injera','Chipsi mayai','Nyama choma'];
 $('tk').innerHTML=[...tw,...tw,...tw].map(w=>`<span>${w} ✦</span>`).join('');
 
 /* recipe card markup, used by the site sheet and by chat replies */
@@ -210,23 +218,35 @@ function recHTML(r){
 
 /* grid + filters */
 let filter='all';
+const ORDER=['Kenyan','Nigerian','Ghanaian','South African','Ethiopian','Ugandan','Tanzanian','Senegalese','Moroccan'];
+function countries(){const have=[...new Set(R.map(r=>r.country))];return [...ORDER.filter(c=>have.includes(c)),...have.filter(c=>!ORDER.includes(c))]}
+function buildChips(){
+  const first=document.querySelector('#filters .chip[data-f="1"]');
+  countries().forEach(c=>{const b=document.createElement('button');b.className='chip';b.dataset.f='country:'+c;b.setAttribute('aria-pressed','false');b.textContent=c;first.before(b)});
+}
 function draw(){
-  const list=R.filter(r=>filter==='all'||(filter==='quick'?r.type!=='meal':String(r.level)===filter));
+  const list=R.filter(r=>filter==='all'||(filter==='quick'?r.type!=='meal':filter.startsWith('cat:')?r.cat===filter.slice(4):filter.startsWith('country:')?r.country===filter.slice(8):String(r.level)===filter))
+    .sort((a,b)=>a.level-b.level||parseInt(a.time)-parseInt(b.time));
   $('grid').innerHTML=list.length?'':'<p class="err">Nothing here yet.</p>';
-  list.forEach(r=>{
-    const b=document.createElement('button');b.className='rc';
-    b.innerHTML=`<div class="ph">${imgTag(r)}<span class="lv l${r.level}">${LV[r.level]}</span></div><div class="t"><b>${r.name}</b><small>${r.time}</small></div>`;
-    b.onclick=()=>openSheet(r.id);
-    $('grid').appendChild(b);
+  countries().forEach(c=>{
+    const items=list.filter(r=>r.country===c);if(!items.length)return;
+    const h=document.createElement('h3');h.className='cty';h.textContent=c+' ('+items.length+')';$('grid').appendChild(h);
+    items.forEach(r=>{
+      const b=document.createElement('button');b.className='rc';
+      b.innerHTML=`<div class="ph">${imgTag(r)}<span class="lv l${r.level}">${LV[r.level]}</span></div><div class="t"><b>${r.name}</b><small>${r.time}</small></div>`;
+      b.onclick=()=>openSheet(r.id);
+      $('grid').appendChild(b);
+    });
   });
 }
-document.querySelectorAll('#filters .chip').forEach(c=>c.onclick=()=>{
+$('filters').onclick=e=>{
+  const c=e.target.closest('.chip');if(!c)return;
   filter=c.dataset.f;
   document.querySelectorAll('#filters .chip').forEach(x=>x.setAttribute('aria-pressed',x===c));
   draw();
-});
+};
 
-fetch('/api/recipes').then(r=>r.json()).then(d=>{R=d;byId=Object.fromEntries(d.map(r=>[r.id,r]));draw()})
+fetch('/api/recipes').then(r=>r.json()).then(d=>{R=d;byId=Object.fromEntries(d.map(r=>[r.id,r]));buildChips();draw()})
   .catch(()=>{$('grid').innerHTML='<p class="err">Could not load recipes. Open the deployed site, not the file on your phone.</p>'});
 
 /* sheet */
