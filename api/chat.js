@@ -45,7 +45,7 @@ const fullRecipe = (r) =>
 const catalog = RECIPES.map((r) => `- ${short(r)} (${LEVEL[r.level]}, ${r.type}, ${r.time})`).join("\n");
 
 function buildPersona(matched, context) {
-  let p = `You are the kitchen assistant on Quick & Easy Recipes, a Kenyan home-cooking website. You help with Kenyan recipes, from 5-minute snacks and drinks to Sunday pilau and nyama choma. You know every recipe on the site (listed below) and can also answer general cooking questions, substitutions, timing and serving ideas.
+  let p = `You are the kitchen assistant on Quick & Easy Recipes, an African home-cooking website with recipes from Kenya, Nigeria, Ghana, South Africa, Ethiopia, Uganda, Tanzania, Senegal and Morocco. You help with those recipes: rice, soups, sauces, toppings, swallow (ugali, eba, fufu, amala, pounded yam), barbecue and snacks. You know every recipe on the site (listed below) and can also answer general cooking questions, substitutions, timing and serving ideas.
 
 Style: warm, practical and short. Reply in the same language the visitor writes in (English, Swahili or Sheng). Never invent steps that contradict the site's recipes.
 
@@ -138,7 +138,7 @@ export default async function handler(req, res) {
 
     // Recipes the AI mentioned by name become tap-to-open suggestions.
     const lower = reply.toLowerCase();
-    const suggest = RECIPES.filter((r) => r.id !== matched?.id && lower.includes(short(r).toLowerCase()))
+    const suggest = RECIPES.filter((r) => r.id !== matched?.id && new RegExp(`\\b${esc(short(r).toLowerCase())}\\b`).test(lower))
       .slice(0, 4)
       .map(publicRecipe);
 
